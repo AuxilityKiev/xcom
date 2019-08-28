@@ -1,0 +1,66 @@
+import * as requestPromise from 'request-promise-native'
+import { Container } from 'typedi'
+import { orderedCategoriesRoots } from '../common/data'
+import { ECOM_URL } from '../config/env.config'
+import { ecomOptions } from '../ecom/ecomOptions'
+import { Category } from '../mongo/entity/category'
+import { CategoryRepository } from '../mongo/repository/categories'
+import { GoodRepository } from '../mongo/repository/goods'
+import { categoryImageExist } from '../utils/fileExist'
+import {logInfo} from "../common/Logger";
+
+/**
+ * Before: updateGoods
+ */
+export default async () => {
+    const goodsRepo = Container.get(GoodRepository)
+    const categoriesRepo = Container.get(CategoryRepository)
+
+    const res: any = await requestPromise({
+        ...ecomOptions,
+        uri: `${ECOM_URL}/categories`
+    })
+
+    // SET IMAGE FOR CATEGORIES AND FIND PRODUCTS COUNT
+    for (const item of res.categories) {
+        const imgName = categoryImageExist(item.id)
+        if (imgName) {
+            item.img = imgName
+        }
+        const updResult = await goodsRepo.collection.updateMany(
+            { siteCatId: item.id },
+            { $set: { categoryName: item.name } }
+        )
+        item.productCount = updResult.matchedCount
+    }
+
+    const ids = []
+    let updated = 0
+
+    // COUNT A TREE SUM USING PRODUCTS COUNT
+    for (const item of res.categories) {
+        ids.push(item.id)
+        item.treeSumCount = recursiveCategoryCount(res.categories, item.id)
+        if (item.level === 1) {
+            const rootDescriptor = orderedCategoriesRoots.find(catDescr => catDescr.id === item.id)
+            item.listOrder = rootDescriptor ? rootDescriptor.order : 1000
+        }
+        await categoriesRepo.collection.updateOne({ id: item.id }, { $set: item }, { upsert: true })
+        updated++
+    }
+
+    const del = await categoriesRepo.collection.deleteMany({ id: { $nin: ids } })
+
+    logInfo('categories updated', { script: 'updateCategories' })
+    return { updated, deleted: del.result.n || 0 }
+}
+
+const recursiveCategoryCount = (categories: Category[], parentId: number): number => {
+    let sum = 0
+    for (const item of categories) {
+        if (item.parentId === parentId) {
+            sum += item.productCount + recursiveCategoryCount(categories, item.id)
+        }
+    }
+    return sum
+}

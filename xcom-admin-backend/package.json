@@ -1,0 +1,42 @@
+{
+  "name": "xcom-admin-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "start": "babel-node server/index.js",
+    "start:prod": "env-cmd .env.prod pm2 startOrReload ecosystem.config.js",
+    "update:regions": "babel-node server/db/scripts/regions.js",
+    "build": "babel server -d lib --source-maps",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/cors": "^2.2.2",
+    "app-root-path": "^2.1.0",
+    "assert": "^1.4.1",
+    "bcrypt": "^3.0.2",
+    "jsonwebtoken": "^8.3.0",
+    "koa": "^2.6.1",
+    "koa-body": "^4.0.4",
+    "koa-bodyparser": "^4.2.1",
+    "koa-formidable": "^1.1.0",
+    "koa-passport": "^4.1.1",
+    "koa-router": "^7.4.0",
+    "koa2-formidable": "^1.0.2",
+    "mongodb": "^3.1.8",
+    "mongoose": "^5.3.9",
+    "passport-jwt": "^4.0.0",
+    "typeorm": "^0.2.8",
+    "winston": "^3.1.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^8.2.3",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-node8": "^1.2.0"
+  }
+}

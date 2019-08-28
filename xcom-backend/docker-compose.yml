@@ -1,0 +1,49 @@
+version: '3'
+services:
+  server:
+    image: server
+    build: ./server
+    container_name: xcom-server
+    depends_on:
+      - mongodb
+    environment:
+      NODE_ENV: development
+      PORT: 80
+      IMAGE_URL: http://localhost/static/images/
+      MANZANA_CASH_URL: http://mbsdevcrm15sp1.manzanagroup.ru:10001/POSProcessing.asmx
+      ECOM_URL: http://ws.erkapharm.com:8990/ecom/hs/
+      ECOM_USER: IdEast
+      ECOM_PASS: KZMY5N
+      MONGO_URI: mongodb://localhost:27017
+      MONGO_DB: xcom-db
+      FTP_CLIENT_HOST: ftp.stoletov.ru
+      FTP_CLIENT_USER: ws_ImagineWeb
+      FTP_CLIENT_PASSWORD: 9035-51109aefc7dd
+    command:
+      ["npm", "run", "start"]
+    ports:
+      - "1340:80"
+    volumes:
+      - ./server:/usr/src/app
+    networks:
+      - webnet
+  mongodb:
+    image: mongo:latest
+    container_name: xcom-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=xcom
+      - MONGO_INITDB_ROOT_PASSWORD=xcompass
+      - MONGO_INITDB_DATABASE=xcom-db
+    ports:
+      - 27017:27017
+    networks:
+      - webnet
+
+networks:
+  webnet:
+
+# docker kill $(docker ps -q)                                       # stop all containers
+# docker rm $(docker ps -a -q)                                      # remove all containers
+# docker rmi $(docker images -q)                                    # remove all docker images
+# docker volume ls -qf dangling=true | xargs docker volume rm    # remove all docker volumes
+

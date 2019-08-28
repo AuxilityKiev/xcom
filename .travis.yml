@@ -1,0 +1,16 @@
+language: node_js
+sudo: false
+node_js:
+  - 10
+branches:
+  only:
+  - /^xcom-backend\/(dev|prod)\/v[\d.]+$/
+before_install:
+  - cd xcom-backend/server/
+script:
+  - if [ $TRAVIS_BRANCH == xcom-backend/dev* ]; then
+      npm run deploy:dev
+    fi
+  - if [ $TRAVIS_BRANCH == xcom-backend/prod* ]; then
+      npm run deploy:prod
+    fi

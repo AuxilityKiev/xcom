@@ -1,0 +1,10 @@
+{
+    "presets": [ "node8" ],
+    "plugins": [
+      ["transform-runtime", {
+        "polyfill": false,
+        "regenerator": true
+      }]
+    ]
+}
+  
